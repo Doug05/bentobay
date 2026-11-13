@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+google-client.json
+*.tok
+pet.key
+*.log
+.DS_Store

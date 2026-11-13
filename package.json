@@ -1,0 +1,48 @@
+{
+  "name": "bentobay",
+  "productName": "BentoBay",
+  "version": "0.3.1",
+  "description": "One native desktop bay for all your AI tools: credits, spend, prompts, limits and a pet.",
+  "main": "main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "check": "node -e \"const fs=require('fs'),cp=require('child_process');['main.js','preload.js',...fs.readdirSync('src').map(f=>'src/'+f),...fs.readdirSync('renderer').filter(f=>f.endsWith('.js')).map(f=>'renderer/'+f)].forEach(f=>cp.execSync('node --check '+f,{stdio:'inherit'}));console.log('syntax ok')\""
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "dev.opensource.bentobay",
+    "directories": {
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**",
+      "renderer/**",
+      "assets/**"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "publish": {
+      "provider": "github"
+    }
+  },
+  "repository": "github:Doug05/bentobay"
+}
