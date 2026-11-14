@@ -13,12 +13,11 @@ function client() {
   } catch { return null; }
 }
 function readTok() {
-  try { const raw = fs.readFileSync(tokFile()); return JSON.parse(safeStorage.isEncryptionAvailable() ? safeStorage.decryptString(raw) : raw.toString()); }
-  catch { return null; }
+  try { return JSON.parse(safeStorage.decryptString(fs.readFileSync(tokFile()))); } catch { return null; }
 }
 function writeTok(t) {
-  const s = JSON.stringify(t);
-  fs.writeFileSync(tokFile(), safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(s) : s);
+  if (!safeStorage.isEncryptionAvailable()) throw new Error('OS keychain unavailable, so Google tokens cannot be stored securely');
+  fs.writeFileSync(tokFile(), safeStorage.encryptString(JSON.stringify(t)));
 }
 async function tokenCall(body, c) {
   const p = new URLSearchParams({ client_id: c.id, ...(c.secret ? { client_secret: c.secret } : {}), ...body });

@@ -5,7 +5,9 @@
 
 **One native desktop bay for all your AI tools.** Stop juggling tabs, logins and subscriptions: BentoBay holds Claude, ChatGPT, Gemini and the rest in one window, and keeps an eye on your credits, spend and habits.
 
-> Screenshots coming soon. Run it locally to see it.
+![BentoBay logo at several sizes](docs/logo-preview.png)
+
+> App screenshots coming soon. Run it locally to see it.
 
 ## Highlights
 - **One window, many tools.** Each tool runs in its own native browser view with its own saved login (not an iframe), kept warm so switching is instant. Split view puts two tools side by side.
@@ -41,6 +43,9 @@ Settings, Companion: turn on AI chat and paste your Anthropic API key. It is enc
 
 ## Privacy
 Everything is stored on your device. Usage stats are time counters per tool and hour, never page content. No telemetry.
+
+## Security
+Sandboxed tool views with separate sessions, a strict UI content security policy, permission prompts for mic and camera, http(s)-only loading, and keychain-encrypted secrets. Details and how to report an issue are in [SECURITY.md](SECURITY.md). No app is "fully secure": keep Electron updated (Dependabot is set up) and only import backups you trust.
 
 ## Known limits
 - Credits and renewals are entered by you; detection only estimates renewals. No provider offers a public usage API for chat subscriptions.

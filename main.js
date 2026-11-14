@@ -8,6 +8,35 @@ const { CATALOG } = require('./src/catalog');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 const AUTH_HOSTS = ['accounts.google.com', 'login.microsoftonline.com', 'appleid.apple.com', 'github.com', 'auth0.com'];
 const ICON = path.join(__dirname, 'assets', 'icon.png');
+
+// Only our own UI (file://) may call the main process.
+const _handle = ipcMain.handle.bind(ipcMain);
+ipcMain.handle = (ch, fn) => _handle(ch, (e, ...a) => {
+  if (!e.senderFrame || !e.senderFrame.url.startsWith('file://')) throw new Error('Untrusted sender');
+  return fn(e, ...a);
+});
+app.on('web-contents-created', (_, wc) => wc.on('will-attach-webview', (e) => e.preventDefault()));
+
+const okUrl = (u) => { try { const p = new URL(u).protocol; return p === 'https:' || p === 'http:'; } catch { return false; } };
+const origin = (u) => { try { return new URL(u).origin; } catch { return ''; } };
+// Third-party tools get no powerful permissions unless you approve (mic/camera/notifications are asked once per site).
+const AUTO = new Set(['fullscreen', 'clipboard-sanitized-write', 'pointerLock']);
+const ASK = new Set(['media', 'notifications']);
+const asked = new Map();
+function lockSession(ses, id) {
+  ses.setPermissionRequestHandler(async (wc, perm, cb, d) => {
+    if (AUTO.has(perm)) return cb(true);
+    if (!ASK.has(perm)) return cb(false);
+    const k = id + '|' + origin(d.requestingUrl) + '|' + perm;
+    if (!asked.has(k)) {
+      const r = await dialog.showMessageBox(win, { type: 'question', buttons: ['Allow', 'Block'], defaultId: 1, cancelId: 1,
+        message: origin(d.requestingUrl) + ' wants to use your ' + (perm === 'media' ? 'microphone or camera' : perm) + '.' });
+      asked.set(k, r.response === 0);
+    }
+    cb(asked.get(k));
+  });
+  ses.setPermissionCheckHandler((wc, perm, org) => AUTO.has(perm) || (ASK.has(perm) && asked.get(id + '|' + org + '|' + perm) === true));
+}
 let win, tray, quitting = false;
 let prefs = { closeToTray: true, startMinimized: false, hotkey: 'CommandOrControl+Shift+Space' };
 const views = new Map(), urls = new Map();
@@ -36,12 +65,15 @@ function keys(wc) {
 }
 function viewFor(id, url) {
   if (views.has(id)) return views.get(id);
+  if (!okUrl(url)) return null;
   const v = new WebContentsView({ webPreferences: { partition: 'persist:' + id, sandbox: true, contextIsolation: true } });
+  lockSession(v.webContents.session, id);
+  v.webContents.on('will-navigate', (e, u) => { if (!okUrl(u)) e.preventDefault(); });
   v.webContents.setUserAgent(UA);
   v.webContents.setWindowOpenHandler(({ url: u }) => {
     try {
       const host = new URL(u).hostname;
-      if (AUTH_HOSTS.some((h) => host === h || host.endsWith('.' + h))) return { action: 'allow' };
+      if (new URL(u).protocol === 'https:' && AUTH_HOSTS.some((h) => host === h || host.endsWith('.' + h))) return { action: 'allow' };
       if (/^https?:/.test(u)) shell.openExternal(u);
     } catch {}
     return { action: 'deny' };
@@ -64,11 +96,16 @@ function createWindow() {
   });
   win.setMenuBarVisibility(false);
   keys(win.webContents);
+  win.webContents.on('will-navigate', (e) => e.preventDefault());
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.once('ready-to-show', () => { if (!(prefs.startMinimized && tray)) win.show(); });
   win.on('close', (e) => { if (prefs.closeToTray && !quitting && tray) { e.preventDefault(); win.hide(); } });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 }
 app.whenReady().then(() => {
+  const ui = (perm) => perm === 'notifications' || perm === 'clipboard-sanitized-write';
+  session.defaultSession.setPermissionRequestHandler((wc, perm, cb) => cb(ui(perm)));
+  session.defaultSession.setPermissionCheckHandler((wc, perm) => ui(perm));
   const s = readState(); if (s && s.prefs) { prefs = { ...prefs, ...s.prefs }; if (s.prefs.binds) binds = { ...binds, ...s.prefs.binds }; }
   try {
     tray = new Tray(nativeImage.createFromPath(ICON).resize({ width: 18, height: 18 }));
@@ -105,7 +142,7 @@ ipcMain.handle('chrome', (_, bg, fg) => { try { if (win.setTitleBarOverlay) win.
 ipcMain.handle('view:layout', (_, items) => {
   const ids = new Set(items.map((i) => i.id));
   for (const [k, v] of views) if (!ids.has(k)) v.setVisible(false);
-  for (const i of items) { const v = viewFor(i.id, i.url); v.setBounds({ x: i.x, y: i.y, width: i.width, height: i.height }); v.setVisible(true); }
+  for (const i of items) { const v = viewFor(i.id, i.url); if (!v) continue; v.setBounds({ x: i.x, y: i.y, width: i.width, height: i.height }); v.setVisible(true); }
 });
 ipcMain.handle('view:hide', () => { for (const v of views.values()) v.setVisible(false); });
 ipcMain.handle('view:warm', (_, items) => { for (const i of items) viewFor(i.id, i.url); });

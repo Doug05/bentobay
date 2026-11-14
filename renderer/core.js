@@ -24,7 +24,7 @@ const dk = (d) => { d = d || new Date(); return d.getFullYear() + '-' + String(d
 const fmt = (s) => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h ? h + 'h ' + m + 'm' : m + 'm'; };
 const mmss = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
 const toMin = (s) => { const a = s.split(':').map(Number); return a[0] * 60 + (a[1] || 0); };
-const money = (n) => S.prefs.currency + (Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+const money = (n) => esc(S.prefs.currency) + (Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
 
 const pct = (t) => (t.total > 0 ? Math.min(100, Math.max(0, (t.used / t.total) * 100)) : 0);
 const col = (p) => (p >= 90 ? 'var(--bad)' : p >= 70 ? 'var(--warn)' : 'var(--ok)');

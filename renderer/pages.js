@@ -76,7 +76,7 @@ function settingsPage() {
       row('Back up', 'Export or import your settings, prompts and stats', '<button class="btn" data-act="export">Export</button><button class="btn" data-act="import">Import</button>'),
       row('Reset usage stats', 'Clears Wrapped and pet XP history', '<button class="btn d" data-act="resetusage">Reset</button>'),
       row('Sign out of all tools', 'Clears saved logins in every tool', '<button class="btn d" data-act="clearsess">Clear</button>')]) +
-    sec('about', 'About', [row('BentoBay 0.3.1', 'Open source under the MIT license. Not affiliated with any listed service', '')]) + '</div></div>';
+    sec('about', 'About', [row('BentoBay 0.3.3', 'Open source under the MIT license. Not affiliated with any listed service', '')]) + '</div></div>';
 }
 
 function promptsPage() {

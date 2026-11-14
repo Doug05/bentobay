@@ -233,7 +233,7 @@ document.addEventListener('click', async (e) => {
     case 'scan': case 'scan2': gAct(async () => ({ ok: true })); break;
     case 'gout': await api.google.signOut(); g = await api.google.status(); render(); break;
     case 'export': api.state.export(S); break;
-    case 'import': { const j = await api.state.import(); if (j && Array.isArray(j.tools)) { S = Object.assign(S, j, { prefs: Object.assign({}, DEF, j.prefs || {}) }); save(); applyPrefs(); warm(); render(); } break; }
+    case 'import': { const j = await api.state.import(); if (j && Array.isArray(j.tools)) { j.tools = j.tools.filter((x) => x && typeof x.id === 'string' && /^https?:\/\//.test(x.url)); S = Object.assign(S, j, { prefs: Object.assign({}, DEF, j.prefs || {}) }); save(); applyPrefs(); warm(); render(); } break; }
     case 'resetusage': if (confirm('Reset all usage stats and pet XP?')) { S.usage = {}; S.stats = { switches: 0, manual: { sessions: 0, minutes: 0 } }; S.pet.xp = 0; save(); render(); } break;
     case 'clearsess': if (confirm('Sign out of every tool?')) api.view.clearSessions(S.tools.map((x) => x.id)); break;
   }
@@ -289,6 +289,7 @@ const seed = () => [
   document.body.classList.toggle('mac', MAC);   catalog = await api.catalog(); g = await api.google.status();
   const saved = await api.state.load(), first = !saved;
   if (saved) S = Object.assign(S, saved, { prefs: Object.assign({}, DEF, saved.prefs || {}) }); else S.prompts = seed();
+  S.tools = S.tools.filter((x) => x && /^https?:\/\//.test(x.url));
   S.prefs.binds = Object.assign({}, DEF.binds, S.prefs.binds); $('#pk').textContent = bl(S.prefs.binds.palette); hasKey = await api.pet.hasKey();
   applyPrefs();
   const dt = S.prefs.defaultTool; active = dt === 'home' ? 'home' : dt === 'last' ? S.last : dt; if (!get(active) && active !== 'home') active = 'home';
