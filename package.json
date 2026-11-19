@@ -1,14 +1,17 @@
 {
   "name": "bentobay",
   "productName": "BentoBay",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "One native desktop bay for all your AI tools: credits, spend, prompts, limits and a pet.",
   "main": "main.js",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder",
-    "check": "node -e \"const fs=require('fs'),cp=require('child_process');['main.js','preload.js',...fs.readdirSync('src').map(f=>'src/'+f),...fs.readdirSync('renderer').filter(f=>f.endsWith('.js')).map(f=>'renderer/'+f)].forEach(f=>cp.execSync('node --check '+f,{stdio:'inherit'}));console.log('syntax ok')\""
+    "check": "node scripts/check.js",
+    "publish:private": "node scripts/push-private.js",
+    "publish:public": "node scripts/go-public.js",
+    "configure": "node scripts/configure.js"
   },
   "devDependencies": {
     "electron": "^45.3.2",
@@ -27,34 +30,85 @@
       "assets/**"
     ],
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "BentoBay-Setup-${version}.${ext}"
     },
     "mac": {
-      "target": "dmg",
-      "category": "public.app-category.productivity"
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "artifactName": "BentoBay-${version}-mac-${arch}.${ext}"
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "category": "Utility",
-      "desktop": {
-        "Name": "BentoBay",
-        "Comment": "One bay for all your AI tools",
-        "Categories": "Utility;"
-      }
+      "artifactName": "BentoBay-${version}-linux-${arch}.${ext}"
     },
     "publish": {
       "provider": "github"
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "BentoBay"
-    }
+      "allowElevation": true,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": false,
+      "shortcutName": "BentoBay",
+      "runAfterFinish": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "installerSidebar": "assets/installerSidebar.bmp",
+      "uninstallerSidebar": "assets/installerSidebar.bmp",
+      "license": "LICENSE",
+      "include": "assets/installer.nsh",
+      "deleteAppDataOnUninstall": false
+    },
+    "extraResources": [
+      {
+        "from": "assets/icon.ico",
+        "to": "icon.ico"
+      }
+    ]
   },
-  "repository": "github:Doug05/bentobay"
+  "repository": "github:Doug05/bentobay",
+  "author": {
+    "name": "Doug05",
+    "email": "137717496+Doug05@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/Doug05/bentobay",
+  "bugs": {
+    "url": "https://github.com/Doug05/bentobay/issues"
+  }
 }

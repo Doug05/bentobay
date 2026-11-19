@@ -20,6 +20,24 @@
 - **Companion.** A small pet that reacts to your habits. Optional chat with your own Anthropic API key.
 - **Auto-detect your tools (optional).** Sign in with Google and BentoBay reads subscription receipts to pre-select tools. Or skip it and choose by hand.
 
+## Platforms
+| Platform | Download / run | Notes |
+|---|---|---|
+| Windows 10/11 (x64) | `BentoBay-Setup-<version>.exe` | Setup wizard (license, install options, folder) that asks whether to create Desktop and Start Menu shortcuts, with the BentoBay logo. Unsigned: click "More info", then "Run anyway". Windows on ARM runs it through emulation. |
+| macOS (Intel and Apple Silicon) | `BentoBay-<version>-mac-x64.dmg` or `-arm64.dmg` | Drag to Applications. Unsigned: right-click the app, choose Open the first time. |
+| Linux (x64 and arm64) | `BentoBay-<version>-linux-<arch>.AppImage` or `.deb` | AppImage: `chmod +x` then run. `.deb` adds an app-menu entry. |
+
+![Setup wizard](docs/installer-wizard.png)
+
+BentoBay is a desktop app. Phones and tablets (Android, iOS) are not supported: it relies on desktop browser views that mobile systems do not offer.
+
+**Platform notes**
+- Linux needs a keyring (GNOME Keyring or KWallet) for saving the Google token and API key; without one BentoBay refuses to store them. On Wayland the global summon hotkey may not work. If an AppImage will not start on a recent Ubuntu, try `--no-sandbox` (this weakens security, so prefer the `.deb`).
+- Launch at login works on Windows and macOS, not on Linux. The tray icon may need an AppIndicator extension on GNOME.
+
+## First-time setup of your own copy
+Run `configure` (`configure.bat`, `mac/configure.command`, `linux/configure.sh` or `npm run configure`). It asks for your GitHub username, repo name, name and email, and optionally your Google OAuth client, then fills in `package.json`, `LICENSE` and this README. Build the installer for your system with `build-installer` (or `npm run dist`).
+
 ## Quick start
 Requires [Node.js](https://nodejs.org) 20 or newer.
 ```
@@ -64,7 +82,7 @@ renderer/       UI: core.js (state), pages.js (screens), app.js (events)
 ```
 
 ## Contributing and releases
-See [CONTRIBUTING.md](CONTRIBUTING.md). To publish installers, tag a version (`git tag v0.3.1 && git push --tags`); the Release workflow builds Windows, macOS and Linux and attaches them to a GitHub release.
+See [CONTRIBUTING.md](CONTRIBUTING.md). To publish installers, tag a version (`git tag v0.4.0 && git push --tags`); the Release workflow builds Windows, macOS and Linux and attaches them to a GitHub release.
 
 ## License
 MIT, see [LICENSE](LICENSE).

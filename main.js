@@ -115,6 +115,7 @@ app.whenReady().then(() => {
   } catch { tray = null; }
   createWindow(); hotkey(prefs.hotkey);
 });
+app.on('activate', () => { if (win) { win.show(); win.focus(); } });
 app.on('before-quit', () => { quitting = true; });
 app.on('will-quit', () => globalShortcut.unregisterAll());
 app.on('window-all-closed', () => app.quit());
